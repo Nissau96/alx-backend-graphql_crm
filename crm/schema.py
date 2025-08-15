@@ -2,11 +2,13 @@
 
 import graphene
 from graphene_django import DjangoObjectType
+from graphene_django.filter import DjangoFilterConnectionField
 from graphql import GraphQLError
 from django.db import transaction
 from django.db.models import Sum
 
 from .models import Customer, Product, Order, validate_phone
+from .filters import CustomerFilter, ProductFilter, OrderFilter
 from django.core.exceptions import ValidationError, ObjectDoesNotExist
 
 
@@ -33,27 +35,34 @@ class OrderType(DjangoObjectType):
 # --- Queries ---
 
 class Query(graphene.ObjectType):
-    all_customers = graphene.List(CustomerType)
-    customer_by_id = graphene.Field(CustomerType, id=graphene.ID())
-    all_products = graphene.List(ProductType)
-    product_by_id = graphene.Field(ProductType, id=graphene.ID())
-    all_orders = graphene.List(OrderType)
+    # Replace the old list queries with DjangoFilterConnectionField
+    all_customers = DjangoFilterConnectionField(CustomerType, filterset_class=CustomerFilter)
+    customer_by_id = graphene.Field(CustomerType, id=graphene.ID(required=True))
 
-    def resolve_all_customers(root, info):
-        return Customer.objects.all()
+    all_products = DjangoFilterConnectionField(ProductType, filterset_class=ProductFilter)
+    product_by_id = graphene.Field(ProductType, id=graphene.ID(required=True))
 
+    all_orders = DjangoFilterConnectionField(OrderType, filterset_class=OrderFilter)
+    order_by_id = graphene.Field(OrderType, id=graphene.ID(required=True))
+
+    # Resolvers for fetching single objects by ID remain the same
     def resolve_customer_by_id(root, info, id):
-        return Customer.objects.get(pk=id)
-
-    def resolve_all_products(root, info):
-        return Product.objects.all()
+        try:
+            return Customer.objects.get(pk=id)
+        except Customer.DoesNotExist:
+            return None
 
     def resolve_product_by_id(root, info, id):
-        return Product.objects.get(pk=id)
+        try:
+            return Product.objects.get(pk=id)
+        except Product.DoesNotExist:
+            return None
 
-    def resolve_all_orders(root, info):
-        # Use prefetch_related for efficiency to avoid N+1 queries
-        return Order.objects.prefetch_related('products').select_related('customer').all()
+    def resolve_order_by_id(root, info, id):
+        try:
+            return Order.objects.get(pk=id)
+        except Order.DoesNotExist:
+            return None
 
 
 # --- Mutations ---
