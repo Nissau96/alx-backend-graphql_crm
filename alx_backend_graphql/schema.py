@@ -5,31 +5,17 @@ This module defines the main GraphQL schema for the CRM application.
 It includes the Query class with basic GraphQL operations.
 """
 
+# alx_backend_graphql/schema.py
+
 import graphene
+import crm.schema
 
+class Query(crm.schema.Query, graphene.ObjectType):
+    # This class inherits all queries from the crm app
+    pass
 
-class Query(graphene.ObjectType):
-    """
-    Main Query class for GraphQL operations.
-    
-    This class inherits from graphene.ObjectType and defines
-    all available query operations for the GraphQL API.
-    """
-    
-    hello = graphene.String(description="A simple hello field that returns a greeting")
-    
-    def resolve_hello(self, info):
-        """
-        Resolver function for the hello field.
-        
-        Args:
-            info: GraphQL resolve info object
-            
-        Returns:
-            str: A greeting message
-        """
-        return "Hello, GraphQL!"
+class Mutation(crm.schema.Mutation, graphene.ObjectType):
+    # This class inherits all mutations from the crm app
+    pass
 
-
-# Create the GraphQL schema
-schema = graphene.Schema(query=Query)
+schema = graphene.Schema(query=Query, mutation=Mutation)
