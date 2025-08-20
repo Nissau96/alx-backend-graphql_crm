@@ -180,8 +180,21 @@ class CreateOrder(graphene.Mutation):
     @staticmethod
     @transaction.atomic
     def mutate(root, info, customer_id, product_ids, order_date=None):
-        # ... (validation logic remains the same) ...
-        
+        try:
+            customer = Customer.objects.get(pk=customer_id)
+        except ObjectDoesNotExist:
+            raise GraphQLError(f"Customer with ID '{customer_id}' does not exist.")
+
+        if not product_ids:
+            raise GraphQLError("At least one product must be selected for an order.")
+
+        found_products = Product.objects.filter(pk__in=product_ids)
+
+        if len(found_products) != len(product_ids):
+            found_ids = {str(p.id) for p in found_products}
+            invalid_ids = [pid for pid in product_ids if pid not in found_ids]
+            raise GraphQLError(f"Invalid Product IDs found: {', '.join(invalid_ids)}")
+
         total_amount = found_products.aggregate(total=Sum('price'))['total'] or 0.00
         
         order_kwargs = {'customer': customer, 'total_amount': total_amount}
