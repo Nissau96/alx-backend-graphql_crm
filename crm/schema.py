@@ -5,7 +5,7 @@ from graphene_django import DjangoObjectType
 from graphene_django.filter import DjangoFilterConnectionField
 from graphql import GraphQLError
 from django.db import transaction
-from django.db.models import Sum
+from django.db.models import Sum, Count
 
 from crm.models import Customer
 from crm.models import Product
@@ -54,6 +54,10 @@ class Query(graphene.ObjectType):
     all_orders = DjangoFilterConnectionField(OrderType, filterset_class=OrderFilter)
     order_by_id = graphene.Field(OrderType, id=graphene.ID(required=True))
 
+    total_customers = graphene.Int()
+    total_orders = graphene.Int()
+    total_revenue = graphene.Decimal()
+
     # Resolvers for fetching single objects by ID remain the same
     def resolve_customer_by_id(root, info, id):
         try:
@@ -66,6 +70,15 @@ class Query(graphene.ObjectType):
             return Product.objects.get(pk=id)
         except Product.DoesNotExist:
             return None
+
+    def resolve_totalCustomers(self, info):
+        return Customer.objects.count()
+
+    def resolve_totalOrders(self, info):
+        return Order.objects.count()
+
+    def resolve_totalRevenue(self, info):
+        return float(Order.objects.aggregate(total=Sum('total_amount'))['total'] or 0.0)
 
     def resolve_order_by_id(root, info, id):
         try:

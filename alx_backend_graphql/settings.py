@@ -37,9 +37,11 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     
+    
     # Third-party apps
     'graphene_django',
     'django_filters',
+    'django_celery_beat',
     
     # Local apps
     'crm',
@@ -130,4 +132,20 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # GraphQL Configuration
 GRAPHENE = {
     'SCHEMA': 'alx_backend_graphql_crm.schema.schema'
+}
+
+# Celery Configuration
+CELERY_BROKER_URL = 'redis://localhost:6379/0'
+CELERY_RESULT_BACKEND = 'redis://localhost:6379/0'
+CELERY_ACCEPT_CONTENT = ['json']
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_RESULT_SERIALIZER = 'json'
+CELERY_TIMEZONE = 'UTC'
+
+# Celery Beat Schedule
+CELERY_BEAT_SCHEDULE = {
+    'generate-crm-report': {
+        'task': 'crm.tasks.generate_crm_report',
+        'schedule': crontab(day_of_week='mon', hour=6, minute=0),
+    },
 }
