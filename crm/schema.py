@@ -35,7 +35,12 @@ class OrderType(DjangoObjectType):
 # --- Queries ---
 
 class Query(graphene.ObjectType):
-    # Replace the old list queries with DjangoFilterConnectionField
+    hello = graphene.String()
+    orders = graphene.List(OrderType, order_date_Gte=graphene.Date())
+
+    def resolve_hello(self, info):
+        return "world"
+    
     all_customers = DjangoFilterConnectionField(CustomerType, filterset_class=CustomerFilter)
     customer_by_id = graphene.Field(CustomerType, id=graphene.ID(required=True))
 
