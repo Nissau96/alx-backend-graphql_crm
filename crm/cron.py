@@ -4,7 +4,7 @@ from gql import gql, Client
 from gql.transport.requests import RequestsHTTPTransport
 
 # Configure logging to append to a file
-logging.basicConfig(filename='E:/Coding Workspace/ALX/alx-backend-graphql_crm/tmp/crm_heartbeat_log.txt', level=logging.INFO,
+logging.basicConfig(filename='/tmp/low_stock_updates_log.txt', level=logging.INFO,
                     format='%(message)s')
 
 def update_low_stock():
@@ -45,7 +45,6 @@ def update_low_stock():
     except Exception as e:
         logging.error(f"{timestamp} - Error updating low stock: {str(e)}")
 
-
 def log_crm_heartbeat():
     # Generate timestamp in DD/MM/YYYY-HH:MM:SS format
     timestamp = datetime.now().strftime('%d/%m/%Y-%H:%M:%S')
@@ -71,8 +70,6 @@ def log_crm_heartbeat():
     except Exception as e:
         logging.error(f"GraphQL health check failed: {str(e)}")
 
-
-
 if __name__ == "__main__":
-    log_crm_heartbeat(),
+    log_crm_heartbeat()
     update_low_stock()
