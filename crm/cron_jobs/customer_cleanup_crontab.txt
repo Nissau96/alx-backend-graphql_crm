@@ -1,0 +1,4 @@
+# Customer Cleanup Cron Job
+# Runs every Sunday at 2:00 AM
+# Format: minute hour day-of-month month day-of-week command
+0 2 * * 0 E:/Coding Workspace/ALX/alx-backend-graphql_crm/crm/cron_jobs/clean_inactive_customers.sh
