@@ -1,6 +1,7 @@
 import logging
 from datetime import datetime
-import requests
+from gql import gql, Client
+from gql.transport.requests import RequestsHTTPTransport
 
 # Configure logging to append to a file
 logging.basicConfig(filename='E:/Coding Workspace/ALX/alx-backend-graphql_crm/tmp/crm_heartbeat_log.txt', level=logging.INFO,
@@ -14,13 +15,22 @@ def log_crm_heartbeat():
     # Log the heartbeat message
     logging.info(heartbeat_message)
 
-    # Optional: Verify GraphQL endpoint responsiveness
+    # Verify GraphQL endpoint responsiveness with hello field
     graphql_url = "http://localhost:8000/graphql"
+    transport = RequestsHTTPTransport(url=graphql_url, verify=True, retries=3)
+    client = Client(transport=transport, fetch_schema_from_transport=True)
+
     try:
-        response = requests.post(graphql_url, json={'query': '{ hello }'})
-        response.raise_for_status()
-        graphql_response = response.json()
-        if graphql_response.get('data', {}).get('hello'):
-            logging.info(f"GraphQL endpoint responsive: {graphql_response['data']['hello']}")
-    except requests.exceptions.RequestException as e:
+        query = gql("""
+            query {
+                hello
+            }
+        """)
+        result = client.execute(query)
+        hello_message = result.get('hello', 'No response')
+        logging.info(f"GraphQL endpoint responsive: {hello_message}")
+    except Exception as e:
         logging.error(f"GraphQL health check failed: {str(e)}")
+
+if __name__ == "__main__":
+    log_crm_heartbeat()
