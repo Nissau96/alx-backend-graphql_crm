@@ -7,7 +7,11 @@ from graphql import GraphQLError
 from django.db import transaction
 from django.db.models import Sum
 
-from crm.models import Customer, Product, Order, validate_phone
+from crm.models import Customer
+from crm.models import Product
+from crm.models import Order
+from crm.models import validate_phone
+
 from .filters import CustomerFilter, ProductFilter, OrderFilter
 from django.core.exceptions import ValidationError, ObjectDoesNotExist
 
